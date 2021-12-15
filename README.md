@@ -4,9 +4,9 @@ Collaborative project.
 
 ## Server Setup
 
-```shell
-npm init
-npm start
+```bash
+$ npm init
+$ npm start
 ```
 
 ## reference

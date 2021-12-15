@@ -1,13 +1,21 @@
 require('dotenv/config');
-const express = require('express');
-const cors = require('cors');
+const port = process.env.PORT;
 
+const express = require('express');
 const app = express();
 
+const cors = require('cors');
 app.use(cors());
 
-app.get('/', (req, res) => {
-  res.send('Hello World!');
+const api = require("./api");
+app.use("/api/v1/", api);
+
+app.delete('/server', function (req, res) {
+  setTimeout(function () {
+    server.close();
+  }, 500);
+  console.log('Shutting down server.');
+  return res.send('Shutting down server.');
 });
 
-app.listen(process.env.PORT, () => console.log(`Server listening on http://localhost:${process.env.PORT}/`));
+const server = app.listen(port, () => console.log(`Server listening on http://localhost:${port}/`));
