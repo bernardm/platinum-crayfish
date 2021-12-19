@@ -3,77 +3,78 @@ const router = express.Router(); // eslint-disable-line new-cap
 
 router.use(express.json());
 
-router.get('/', (req, res) => {
-  return res.send('Received a GET HTTP method');
+let decks = {
+  1: {
+    id: '1',
+    name: 'Deutsche Bundesländer - Federal States of Germany',
+  },
+  2: {
+    id: '2',
+    name: 'German 7000 Intermediate/Advanced Sentences w/ Audio [1/2]',
+  },
+  3: {
+    id: '3',
+    name: 'Сильные немецкие глаголы и их перевод на русский',
+  },
+  4: {
+    id: '4',
+    name: 'Deutsch(German) → Japanisch(Japanese)【最強のドイツ語単語カードを目指して】',
+  },
+};
+let deckKey = Object.keys(decks).length;
+
+router.get('/decks', (req, res) => {
+  return res.status(200).send(Object.values(decks));
 });
 
-router.post('/', (req, res) => {
-  return res.send('Received a POST HTTP method');
+// create deck
+router.post('/decks', (req, res) => {
+  const id = ++deckKey;
+  const deck = { id, name: req.body['name'] };
+  decks[id] = deck;
+  return res.status(201).send(deck);
 });
 
-router.put('/', (req, res) => {
-  return res.send('Received a PUT HTTP method');
-});
+// read deck
+router.get('/decks/:deckId', (req, res) => {
+  const id = req.params.deckId;
+  let deck, responseCode;
 
-router.delete('/', (req, res) => {
-  return res.send('Received a DELETE HTTP method');
-});
-
-const decks = ['Deck One', 'Deck Two', 'Deck Three'];
-
-const arrayHasIndex = (array, index) => Array.isArray(array) && array.hasOwnProperty(index);
-function getDeck(id) {
-  const index = parseInt(id)
-  if (typeof id === 'undefined') {
-    return decks.map((name, id) => ({ name, id }));
-  } else if (arrayHasIndex(decks, index)) {
-    return ({ id: index, name: decks[index] })
+  if (id in decks) {
+    deck = decks[id]
+    responseCode = 200;
   } else {
-    return -1
+    deck = null;
+    responseCode = 404;
   }
-}
-
-router.get("/decks", (req, res) => {
-  return res.status(200).json(getDeck());
+  return res.status(responseCode).send(deck);
 });
 
-router.get("/decks/:id", (req, res) => {
-  const data = getDeck(req.params.id);
-  if (data === -1) {
-    const msg = `There is no deck with id ${req.params.id}.`;
-    console.error(msg);
-    return res
-      .status(400)
-      .send({ error: msg });
+// update deck
+router.put('/decks/:deckId', (req, res) => {
+  const id = req.params.deckId;
+  let deck, responseCode;
+
+  if (id in decks) {
+    deck = { id, name: req.body['name'] };
+    responseCode = 200;
+    decks[id] = deck;
   } else {
-    return res.status(200).json(data);
+    deck = null;
+    responseCode = 404;
   }
+  return res.status(responseCode).send(deck);
 });
 
-router.post("/decks", (req, res) => {
-  const id = decks.length;
-  const name = req.body['name'];
-  decks.push(name);
-  return res.status(200).send({ id, name });
+// delete deck
+router.delete('/decks/:deckId', (req, res) => {
+  const {
+    [req.params.deckId]: deck,
+    ...otherDecks
+  } = decks;
+  decks = otherDecks;
+  const responseCode = (typeof deck === 'undefined') ? 404 : 200;
+  return res.status(responseCode).send(deck);
 });
-
-router.put("/decks/:id", (req, res) => {
-  const id = parseInt(req.params.id);
-  const name = req.body['name'];
-  decks[id] = name;
-  return res.status(200).send({ id, name });
-});
-
-router.delete("/decks/:id", (req, res) => {
-  return res.status(400).send({ error: "not implemented" });
-});
-
-/*
-+ GET     /api/v1/decks         get all decks
-+ GET     /api/v1/decks/:id     get specific deck by id
-+ POST    /api/v1/decks         create a new deck
-+ PATCH   /api/v1/decks/:id     edit specific deck by id
-DELETE  /api/v1/decks/:id     delete specific deck by id
-*/
 
 module.exports = router;
